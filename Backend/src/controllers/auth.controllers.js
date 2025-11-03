@@ -54,7 +54,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
 
   const existingUser = await User.findOne({ email: req.user._json.email });
 
-  const frontendBase = process.env.FRONTEND_URL;
+  const frontendBase = "https://skillswapnew.vercel.app";
   if (!frontendBase) {
     return res.status(500).json(new ApiError(500, "FRONTEND_URL is not configured on the server"));
   }
