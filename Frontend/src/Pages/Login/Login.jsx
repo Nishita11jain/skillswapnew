@@ -6,7 +6,8 @@ const Login = () => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleGoogleLogin = () => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    // const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = "https://skillswapnew.onrender.com";
     const target = backendUrl ? `${backendUrl}/auth/google` : "/auth/google";
     window.location.href = target;
   };
