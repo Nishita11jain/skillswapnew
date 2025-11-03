@@ -7,13 +7,16 @@ import { BrowserRouter as Router } from "react-router-dom";
 import axios from "axios";
 import { UserContextProvider } from "./util/UserContext.jsx";
 
-if (import.meta.env.DEV) {
-  console.log("Running in development mode");
-  axios.defaults.baseURL = import.meta.env.VITE_LOCALHOST;
-} else {
-  console.log("Running in production mode");
-  axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
+const resolvedBackendUrl =
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.DEV ? import.meta.env.VITE_LOCALHOST : import.meta.env.VITE_SERVER_URL) ||
+  "";
+
+if (!resolvedBackendUrl) {
+  console.warn("No backend URL env found. Set VITE_BACKEND_URL (or VITE_LOCALHOST/VITE_SERVER_URL). Requests will be relative.");
 }
+
+axios.defaults.baseURL = resolvedBackendUrl || axios.defaults.baseURL;
 axios.defaults.withCredentials = true;
 
 ReactDOM.createRoot(document.getElementById("root")).render(

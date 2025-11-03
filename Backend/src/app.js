@@ -61,5 +61,18 @@ app.use("/request", requestRouter);
 app.use("/report", reportRouter);
 app.use("/rating", ratingRouter);
 
+// Health and root routes
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    name: "SkillSwap Backend",
+    status: "running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 export { app };
 export default app;
