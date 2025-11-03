@@ -1,18 +1,20 @@
 // Create this file as src/config/axiosConfig.js or similar
 
 import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
-// Set the base URL for your backend
-axios.defaults.baseURL = 'http://localhost:8000';
+// Set the base URL for server-side axios from env (no hardcoded localhost)
+// Prefer INTERNAL_API_BASE_URL, fallback to BACKEND_URL, else leave default
+axios.defaults.baseURL = process.env.INTERNAL_API_BASE_URL || process.env.BACKEND_URL || axios.defaults.baseURL;
 
 // Enable credentials for session-based authentication
 axios.defaults.withCredentials = true;
 
-// Add request interceptor to include auth token
+// Add request interceptor to include auth token (only in browser environments)
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('userInfo');
+    const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : undefined;
     
     // Add authorization header if token exists
     if (token) {
@@ -20,7 +22,9 @@ axios.interceptors.request.use(
     }
     
     // Log requests for debugging (remove in production)
-    console.log('Making request to:', config.url);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Making request to:', config.url);
+    }
     
     return config;
   },
@@ -30,7 +34,7 @@ axios.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle authentication errors
+// Add response interceptor to handle authentication errors (browser-only redirects)
 axios.interceptors.response.use(
   (response) => {
     return response;
@@ -38,15 +42,14 @@ axios.interceptors.response.use(
   (error) => {
     console.error('Response error:', error);
     
-    // Handle authentication errors globally
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      // Clear user data
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('token');
-      
-      // Redirect to login if not already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+    // Handle authentication errors globally (only if window is available)
+    if (typeof window !== 'undefined') {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('token');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     

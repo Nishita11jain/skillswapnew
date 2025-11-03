@@ -10,9 +10,8 @@ const app = express();
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowed = process.env.CORS_ORIGIN?.split(",").map((o) => o.trim()).filter(Boolean) || [
-        "http://localhost:5173",
-      ];
+      const allowed = process.env.CORS_ORIGIN?.split(",").map((o) => o.trim()).filter(Boolean)
+        || (process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []);
       if (!origin || allowed.includes(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
@@ -26,9 +25,8 @@ app.use(express.static("public")); // to use static public folder
 app.use(cookieParser()); // to enable CRUD operation on browser cookies
 
 app.use(function (req, res, next) {
-  const allowed = process.env.CORS_ORIGIN?.split(",").map((o) => o.trim()).filter(Boolean) || [
-    "http://localhost:5173",
-  ];
+  const allowed = process.env.CORS_ORIGIN?.split(",").map((o) => o.trim()).filter(Boolean)
+    || (process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []);
   const requestOrigin = req.headers.origin;
   if (requestOrigin && allowed.includes(requestOrigin)) {
     res.setHeader("Access-Control-Allow-Origin", requestOrigin);
