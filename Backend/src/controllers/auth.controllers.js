@@ -28,6 +28,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   console.warn("Google OAuth env vars not set; skipping GoogleStrategy initialization");
 }
 
+// Passport serialization functions (required for sessions)
+passport.serializeUser((user, done) => {
+  // Serialize the user profile to the session
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  // Deserialize the user from the session
+  done(null, user);
+});
+
 export const googleAuthHandler = passport.authenticate("google", {
   scope: ["profile", "email"],
 });

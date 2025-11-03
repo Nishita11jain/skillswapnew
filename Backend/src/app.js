@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import passport from "passport";
+import session from "express-session";
 // axios frontend config should not be imported on the server
 
 
@@ -35,8 +36,24 @@ app.use(function (req, res, next) {
   next();
 });
 
+// Session configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-secret-key-change-in-production",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production (HTTPS only)
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Required for cross-site cookies in production
+    },
+  })
+);
+
 // Passport middleware
 app.use(passport.initialize());
+app.use(passport.session());
 
 import dotenv from "dotenv";
 dotenv.config();
