@@ -54,15 +54,22 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
 
   const existingUser = await User.findOne({ email: req.user._json.email });
 
-  const frontendBase = "https://skillswapnew.vercel.app";
+  const frontendBase = process.env.FRONTEND_URL || "http://localhost:5173";
   if (!frontendBase) {
     return res.status(500).json(new ApiError(500, "FRONTEND_URL is not configured on the server"));
   }
 
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  };
+
   if (existingUser) {
     const jwtToken = generateJWTToken_username(existingUser);
     const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
-    res.cookie("accessToken", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+    res.cookie("accessToken", jwtToken, { ...cookieOptions, expires: expiryDate });
     return res.redirect(`${frontendBase}/discover`);
   }
 
@@ -77,12 +84,19 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   }
   const jwtToken = generateJWTToken_email(unregisteredUser);
   const expiryDate = new Date(Date.now() + 0.5 * 60 * 60 * 1000);
-  res.cookie("accessTokenRegistration", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+  res.cookie("accessTokenRegistration", jwtToken, { ...cookieOptions, expires: expiryDate });
   return res.redirect(`${frontendBase}/register`);
 });
 
 export const handleLogout = (req, res) => {
   console.log("\n******** Inside handleLogout function ********");
-  res.clearCookie("accessToken");
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  };
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("accessTokenRegistration", cookieOptions);
   return res.status(200).json(new ApiResponse(200, null, "User logged out successfully"));
 };

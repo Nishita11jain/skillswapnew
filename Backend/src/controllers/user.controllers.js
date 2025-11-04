@@ -149,12 +149,12 @@ export const saveAddUnRegisteredUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Bio should be less than 500 characters");
   }
 
-  if (projects.size > 0) {
+  if (projects.length > 0) {
     projects.forEach((project) => {
       if (!project.title || !project.description || !project.projectLink || !project.startDate || !project.endDate) {
         throw new ApiError(400, "Please provide all the details");
       }
-      if (project.projectLink.match(/^(http|https):\/\/[^ "]+$/)) {
+      if (!project.projectLink.match(/^(http|https):\/\/[^ "]+$/)) {
         throw new ApiError(400, "Please provide valid project link");
       }
       if (project.startDate > project.endDate) {
@@ -172,7 +172,7 @@ export const saveAddUnRegisteredUser = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, user, "User details saved successfully"));
 });
 
-export const registerUser = async (req, res) => {
+export const registerUser = asyncHandler(async (req, res) => {
   console.log("\n******** Inside registerUser function ********");
   // First check if the user is already registered
   // if the user is already registerd than send a message that the user is already registered
@@ -235,12 +235,12 @@ export const registerUser = async (req, res) => {
   if (bio.length > 500) {
     throw new ApiError(400, "Bio should be less than 500 characters");
   }
-  if (projects.size > 0) {
+  if (projects.length > 0) {
     projects.forEach((project) => {
       if (!project.title || !project.description || !project.projectLink || !project.startDate || !project.endDate) {
         throw new ApiError(400, "Please provide all the details");
       }
-      if (project.projectLink.match(/^(http|https):\/\/[^ "]+$/)) {
+      if (!project.projectLink.match(/^(http|https):\/\/[^ "]+$/)) {
         throw new ApiError(400, "Please provide valid project link");
       }
       if (project.startDate > project.endDate) {
@@ -283,10 +283,16 @@ export const registerUser = async (req, res) => {
 
   const jwtToken = generateJWTToken_username(newUser);
   const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
-  res.cookie("accessToken", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+  const isProduction = process.env.NODE_ENV === "production";
+  res.cookie("accessToken", jwtToken, {
+    httpOnly: true,
+    expires: expiryDate,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
   res.clearCookie("accessTokenRegistration");
   return res.status(200).json(new ApiResponse(200, newUser, "NewUser registered successfully"));
-};
+});
 
 export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
   console.log("******** Inside saveRegRegisteredUser Function *******");
@@ -382,12 +388,12 @@ export const saveAddRegisteredUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Bio should be less than 500 characters");
   }
 
-  if (projects.size > 0) {
+  if (projects.length > 0) {
     projects.forEach((project) => {
       if (!project.title || !project.description || !project.projectLink || !project.startDate || !project.endDate) {
         throw new ApiError(400, "Please provide all the details");
       }
-      if (project.projectLink.match(/^(http|https):\/\/[^ "]+$/)) {
+      if (!project.projectLink.match(/^(http|https):\/\/[^ "]+$/)) {
         throw new ApiError(400, "Please provide valid project link");
       }
       if (project.startDate > project.endDate) {
