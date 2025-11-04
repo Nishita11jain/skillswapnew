@@ -35,6 +35,8 @@ const Discover = () => {
         }
         localStorage.removeItem("userInfo");
         setUser(null);
+        await axios.get("/auth/logout");
+        navigate("/login");
       }
     };
 
@@ -54,6 +56,8 @@ const Discover = () => {
         }
         localStorage.removeItem("userInfo");
         setUser(null);
+        await axios.get("/auth/logout");
+        navigate("/login");
       } finally {
         setLoading(false);
       }

@@ -17,12 +17,22 @@ if (!resolvedBackendUrl) {
 axios.defaults.baseURL = resolvedBackendUrl;
 axios.defaults.withCredentials = true;
 
-// Remove aggressive global redirects on 401; allow components to handle gracefully
+// Add response interceptor to handle 401 errors globally
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
+    // Handle authentication errors
     if (error.response?.status === 401) {
+      // Clear user data
       localStorage.removeItem("userInfo");
+      
+      // Only redirect if not already on login page to prevent infinite loops
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/login" && currentPath !== "/" && currentPath !== "/register") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

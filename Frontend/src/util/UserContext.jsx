@@ -34,8 +34,23 @@ const UserContextProvider = ({ children }) => {
       }
       
       if (!userInfoString) {
-        setLoading(false);
-        return;
+        // No local user info; attempt to verify using cookie/JWT
+        try {
+          const { data } = await axios.get("/user/registered/getDetails");
+          if (data.success && data.data) {
+            setUser(data.data);
+            localStorage.setItem("userInfo", JSON.stringify(data.data));
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Verification failed; redirect to login on protected routes
+          if (!publicRoutes.includes(currentPath)) {
+            navigate("/login");
+          }
+          setLoading(false);
+          return;
+        }
       }
 
       try {
@@ -48,14 +63,20 @@ const UserContextProvider = ({ children }) => {
             localStorage.setItem("userInfo", JSON.stringify(data.data));
           } else {
             // Invalid token, clear storage
-          localStorage.removeItem("userInfo");
-          setUser(null);
+            localStorage.removeItem("userInfo");
+            setUser(null);
+            if (!publicRoutes.includes(currentPath)) {
+              navigate("/login");
+            }
           }
         } catch (error) {
           // Token is invalid or expired
           console.error("Token verification failed:", error);
           localStorage.removeItem("userInfo");
           setUser(null);
+          if (!publicRoutes.includes(currentPath)) {
+            navigate("/login");
+          }
         }
       } catch (error) {
         console.error("Error parsing userInfo:", error);
