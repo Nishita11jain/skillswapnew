@@ -60,10 +60,11 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   }
 
   const isProduction = process.env.NODE_ENV === "production";
+  const crossSite = process.env.CROSS_SITE_COOKIES === "true";
   const cookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: crossSite || isProduction,
+    sameSite: crossSite ? "none" : isProduction ? "none" : "lax",
   };
 
   if (existingUser) {
@@ -91,10 +92,11 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
 export const handleLogout = (req, res) => {
   console.log("\n******** Inside handleLogout function ********");
   const isProduction = process.env.NODE_ENV === "production";
+  const crossSite = process.env.CROSS_SITE_COOKIES === "true";
   const cookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: crossSite || isProduction,
+    sameSite: crossSite ? "none" : isProduction ? "none" : "lax",
   };
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("accessTokenRegistration", cookieOptions);

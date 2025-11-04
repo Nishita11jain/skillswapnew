@@ -35,10 +35,6 @@ const UserContextProvider = ({ children }) => {
       
       if (!userInfoString) {
         setLoading(false);
-        // Redirect to login if on protected route
-        if (!publicRoutes.includes(currentPath)) {
-          navigate("/login");
-        }
         return;
       }
 
@@ -52,20 +48,14 @@ const UserContextProvider = ({ children }) => {
             localStorage.setItem("userInfo", JSON.stringify(data.data));
           } else {
             // Invalid token, clear storage
-            localStorage.removeItem("userInfo");
-            setUser(null);
-            if (!publicRoutes.includes(currentPath)) {
-              navigate("/login");
-            }
+          localStorage.removeItem("userInfo");
+          setUser(null);
           }
         } catch (error) {
           // Token is invalid or expired
           console.error("Token verification failed:", error);
           localStorage.removeItem("userInfo");
           setUser(null);
-          if (!publicRoutes.includes(currentPath)) {
-            navigate("/login");
-          }
         }
       } catch (error) {
         console.error("Error parsing userInfo:", error);

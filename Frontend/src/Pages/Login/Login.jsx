@@ -6,11 +6,12 @@ const Login = () => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleGoogleLogin = () => {
-    const backendUrl =
-      import.meta.env.VITE_BACKEND_URL ||
-      (import.meta.env.DEV ? import.meta.env.VITE_LOCALHOST : import.meta.env.VITE_SERVER_URL) ||
-      "";
-    const target = backendUrl ? `${backendUrl}/auth/google` : "/auth/google";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    if (!backendUrl) {
+      console.error("VITE_BACKEND_URL is required but not set. Please configure it in your environment.");
+      throw new Error("Missing VITE_BACKEND_URL environment variable");
+    }
+    const target = `${backendUrl}/auth/google`;
     console.log("Redirecting to:", target); // Debug log
     window.location.href = target;
   };

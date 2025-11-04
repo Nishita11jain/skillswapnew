@@ -2,6 +2,9 @@ import dotenv from "dotenv";
 import connectDB from "./config/connectDB.js";
 import { app } from "./app.js";
 import { Server } from "socket.io";
+import https from "https";
+import http from "http";
+import fs from "fs";
 
 dotenv.config();
 
@@ -10,9 +13,22 @@ const port = process.env.PORT || 8000;
 connectDB()
   .then(() => {
     console.log("Database connected");
-    const server = app.listen(port, () => {
-      console.log(`Server listening on port ${port}`);
-    });
+    let server;
+    const httpsKeyPath = process.env.HTTPS_KEY;
+    const httpsCertPath = process.env.HTTPS_CERT;
+    if (httpsKeyPath && httpsCertPath && fs.existsSync(httpsKeyPath) && fs.existsSync(httpsCertPath)) {
+      const credentials = {
+        key: fs.readFileSync(httpsKeyPath),
+        cert: fs.readFileSync(httpsCertPath),
+      };
+      server = https.createServer(credentials, app).listen(port, () => {
+        console.log(`HTTPS server listening on port ${port}`);
+      });
+    } else {
+      server = http.createServer(app).listen(port, () => {
+        console.log(`HTTP server listening on port ${port}`);
+      });
+    }
 
     const io = new Server(server, {
       pingTimeout: 60000,

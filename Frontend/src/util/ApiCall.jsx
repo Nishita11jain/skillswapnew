@@ -20,17 +20,17 @@ const ApiCall = async (url, method, navigate, setUser, data) => {
       
       const status = error.response.status;
       if (status === 401) {
-        toast.error("You are not authorized to access this page. Please login first.");
-        navigate("/login");
+        toast.error("You are not authorized. Please login.");
+        return;
       } else if (status === 404) {
         toast.error("The requested resource was not found.");
-        navigate("/");
+        return;
       } else if (status === 500) {
         toast.error("Server Error. Please try again later.");
-        navigate("/");
+        return;
       } else {
         toast.error(error.response.data?.message || "An error occurred. Please try again later.");
-        navigate("/");
+        return;
       }
     }
   } else if (method === "POST") {
@@ -49,17 +49,17 @@ const ApiCall = async (url, method, navigate, setUser, data) => {
       
       const status = error.response.status;
       if (status === 401) {
-        toast.error("You are not authorized to access this page. Please login first.");
-        navigate("/login");
+        toast.error("You are not authorized. Please login.");
+        return;
       } else if (status === 404) {
         toast.error("The requested resource was not found.");
-        navigate("/");
+        return;
       } else if (status === 500) {
         toast.error("Server Error. Please try again later.");
-        navigate("/");
+        return;
       } else {
         toast.error(error.response.data?.message || "An error occurred. Please try again later.");
-        navigate("/");
+        return;
       }
     }
   }

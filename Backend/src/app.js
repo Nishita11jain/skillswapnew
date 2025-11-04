@@ -12,57 +12,10 @@ dotenv.config();
 
 const app = express();
 
-// Default allowed origins for development (fallback if no env vars)
-const defaultDevOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://localhost:5174",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:3000",
-];
-
+// Permissive CORS: reflect request origin and allow credentials
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      // Priority: FRONTEND_URL > CORS_ORIGIN > localhost defaults (dev only)
-      const frontendUrl = process.env.FRONTEND_URL;
-      const corsOrigin = process.env.CORS_ORIGIN;
-      
-      let allowed = [];
-      
-      // First, use FRONTEND_URL if set
-      if (frontendUrl) {
-        allowed.push(frontendUrl.trim());
-      }
-      
-      // Then, add CORS_ORIGIN if set (comma-separated list)
-      if (corsOrigin) {
-        const corsOrigins = corsOrigin.split(",").map((o) => o.trim()).filter(Boolean);
-        allowed = [...new Set([...allowed, ...corsOrigins])];
-      }
-
-      // In development, add localhost origins if no env vars are set
-      const isDevelopment = process.env.NODE_ENV !== "production";
-      if (isDevelopment && allowed.length === 0) {
-        allowed = defaultDevOrigins;
-      } else if (isDevelopment) {
-        // Merge with localhost in dev even if env vars are set
-        allowed = [...new Set([...allowed, ...defaultDevOrigins])];
-      }
-
-      if (allowed.length === 0 || allowed.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // Log for debugging
-      console.log(`CORS blocked origin: ${origin}. Allowed: ${allowed.join(", ")}`);
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: true,
     credentials: true,
   })
 );
@@ -72,32 +25,10 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" })); // to parse url
 app.use(express.static("public")); // to use static public folder
 app.use(cookieParser()); // to enable CRUD operation on browser cookies
 
-// Additional CORS headers middleware (backup)
+// Additional CORS headers middleware (fallback): reflect origin always
 app.use(function (req, res, next) {
-  // Priority: FRONTEND_URL > CORS_ORIGIN > localhost defaults (dev only)
-  const frontendUrl = process.env.FRONTEND_URL;
-  const corsOrigin = process.env.CORS_ORIGIN;
-  
-  let allowed = [];
-  
-  if (frontendUrl) {
-    allowed.push(frontendUrl.trim());
-  }
-  
-  if (corsOrigin) {
-    const corsOrigins = corsOrigin.split(",").map((o) => o.trim()).filter(Boolean);
-    allowed = [...new Set([...allowed, ...corsOrigins])];
-  }
-  
-  const isDevelopment = process.env.NODE_ENV !== "production";
-  if (isDevelopment && allowed.length === 0) {
-    allowed = defaultDevOrigins;
-  } else if (isDevelopment) {
-    allowed = [...new Set([...allowed, ...defaultDevOrigins])];
-  }
-
   const requestOrigin = req.headers.origin;
-  if (requestOrigin && (allowed.length === 0 || allowed.includes(requestOrigin))) {
+  if (requestOrigin) {
     res.setHeader("Access-Control-Allow-Origin", requestOrigin);
   }
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -113,10 +44,15 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production (HTTPS only)
+      secure: process.env.CROSS_SITE_COOKIES === "true" || process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Required for cross-site cookies in production
+      sameSite:
+        process.env.CROSS_SITE_COOKIES === "true"
+          ? "none"
+          : process.env.NODE_ENV === "production"
+          ? "none"
+          : "lax",
     },
   })
 );
