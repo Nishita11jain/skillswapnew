@@ -65,6 +65,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: crossSite || isProduction,
     sameSite: crossSite ? "none" : isProduction ? "none" : "lax",
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   };
 
   if (existingUser) {
@@ -97,6 +98,7 @@ export const handleLogout = (req, res) => {
     httpOnly: true,
     secure: crossSite || isProduction,
     sameSite: crossSite ? "none" : isProduction ? "none" : "lax",
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   };
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("accessTokenRegistration", cookieOptions);
