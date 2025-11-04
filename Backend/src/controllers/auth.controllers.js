@@ -73,7 +73,8 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
     const jwtToken = generateJWTToken_username(existingUser);
     const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
     res.cookie("accessToken", jwtToken, { ...cookieOptions, expires: expiryDate });
-    return res.redirect(`${frontendBase}/discover`);
+    // Also pass token via URL fragment to avoid third-party cookie issues
+    return res.redirect(`${frontendBase}/discover#token=${jwtToken}`);
   }
 
   let unregisteredUser = await UnRegisteredUser.findOne({ email: req.user._json.email });
@@ -88,7 +89,8 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   const jwtToken = generateJWTToken_email(unregisteredUser);
   const expiryDate = new Date(Date.now() + 0.5 * 60 * 60 * 1000);
   res.cookie("accessTokenRegistration", jwtToken, { ...cookieOptions, expires: expiryDate });
-  return res.redirect(`${frontendBase}/register`);
+  // Also pass token via URL fragment to avoid third-party cookie issues
+  return res.redirect(`${frontendBase}/register#token=${jwtToken}`);
 });
 
 export const handleLogout = (req, res) => {

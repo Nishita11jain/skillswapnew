@@ -17,6 +17,32 @@ if (!resolvedBackendUrl) {
 axios.defaults.baseURL = resolvedBackendUrl;
 axios.defaults.withCredentials = true;
 
+// Extract token from URL fragment (e.g., #token=...) and persist
+(() => {
+  try {
+    const hash = window.location.hash || "";
+    if (hash.startsWith("#")) {
+      const params = new URLSearchParams(hash.slice(1));
+      const token = params.get("token");
+      if (token && token.length > 10) {
+        localStorage.setItem("authToken", token);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        // Clean the hash from URL
+        const { pathname, search } = window.location;
+        window.history.replaceState(null, "", pathname + search);
+      }
+    }
+  } catch (_) {}
+})();
+
+// Hydrate Authorization header from storage on load
+(() => {
+  const stored = localStorage.getItem("authToken");
+  if (stored && stored.length > 10) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${stored}`;
+  }
+})();
+
 // Add response interceptor to handle 401 errors globally
 axios.interceptors.response.use(
   (response) => {
