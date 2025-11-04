@@ -12,6 +12,9 @@ dotenv.config();
 
 const app = express();
 
+// Ensure correct behavior for secure cookies behind proxies (Render/NGINX)
+app.set("trust proxy", 1);
+
 // Permissive CORS: reflect request origin and allow credentials
 app.use(
   cors({
