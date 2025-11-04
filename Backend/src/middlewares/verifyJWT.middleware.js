@@ -10,6 +10,10 @@ const verifyJWT_email = asyncHandler(async (req, res, next) => {
   try {
     console.log("\n******** Inside verifyJWT_email Function ********");
 
+    if (process.env.DEBUG_AUTH === "true") {
+      console.log("verifyJWT_email origin:", req.headers.origin);
+      console.log("verifyJWT_email cookies present:", Object.keys(req.cookies || {}));
+    }
     const token = req.cookies?.accessTokenRegistration || req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
       console.log("token not found");
@@ -44,6 +48,10 @@ const verifyJWT_username = asyncHandler(async (req, res, next) => {
   try {
     console.log("\n******** Inside verifyJWT_username Function ********");
 
+    if (process.env.DEBUG_AUTH === "true") {
+      console.log("verifyJWT_username origin:", req.headers.origin);
+      console.log("verifyJWT_username cookies present:", Object.keys(req.cookies || {}));
+    }
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
       console.log("token not found");

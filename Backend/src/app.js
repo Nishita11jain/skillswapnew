@@ -18,7 +18,7 @@ app.set("trust proxy", 1);
 // Permissive CORS: reflect request origin and allow credentials
 app.use(
   cors({
-    origin: true,
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -30,13 +30,17 @@ app.use(cookieParser()); // to enable CRUD operation on browser cookies
 
 // Additional CORS headers middleware (fallback): reflect origin always
 app.use(function (req, res, next) {
-  const requestOrigin = req.headers.origin;
-  if (requestOrigin) {
-    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+  const allowedOrigin = process.env.FRONTEND_URL;
+  if (allowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
   }
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  // Respond quickly to preflight
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
   next();
 });
 
